@@ -1,0 +1,1 @@
+web gunicorn hashit.wsgi:application --log-file -

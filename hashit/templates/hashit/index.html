@@ -1,0 +1,78 @@
+{% load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'hashit/style.css' %}">
+    <title>HashAll</title>
+</head>
+<body>
+    <center><h1 class ="title">HashAll()</h1></center>
+    <div id="formular">
+        <form action="{% url 'hashit:get_hash' %}" method="post">
+            {% csrf_token %}
+            <textarea id="w3review" name="w3review" rows="4" cols="50" placeholder="Type text and hash it..."></textarea><br><br>
+            <input type="button" value="HASH IT!" onclick="sendAJAX()">
+            <label class="label_algo" for="algo">Choose Algorithm:</label>
+    
+            <select name="algo" id="selected_algo">
+                <option value="sha3_224">sha3_224</option>
+                <option value="sha3_256">sha3_256</option>
+                <option value="sha3_384">sha3_384</option>
+                <option value="sha3_512">sha3_512</option>
+            </select>
+        </form>
+        <h1 class="white">HashCode:</h1><p class="hash_code white"></p>
+    </div>
+    
+</body>
+
+<script>
+
+    let getCookie = (cname) => {
+        let name = cname + "=";
+        let decodedCookie = decodeURIComponent(document.cookie);
+        let ca = decodedCookie.split(';');
+        for(let i = 0; i <ca.length; i++) {
+          let c = ca[i];
+          while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+          }
+          if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+          }
+        }
+        return "";
+    }
+    
+    
+    
+    let sendAJAX = () => {
+        var token = getCookie("csrftoken");
+        var _data = document.getElementById("w3review").value;
+        var _print = document.getElementsByClassName("hash_code")[0];
+        var e = document.getElementById("selected_algo");
+        var _algo = e.options[e.selectedIndex].text;
+        console.log(_data,_algo);
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/hash/", true);
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState == XMLHttpRequest.DONE) {
+                var jsonData=JSON.parse(xhr.response);
+                _print.textContent=jsonData.hash_code
+    
+            }
+    
+        }
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader("X-CSRFToken", token);
+        xhr.send(JSON.stringify({
+            content_to_hash: _data,
+            algorithm: _algo
+        }));
+        
+    }
+    </script>
+</html>
